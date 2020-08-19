@@ -16,4 +16,6 @@ export default function InfoBox({ title, cases, total }) {
             </CardContent> 
         </Card>
     )
+
 }
+
