@@ -1,63 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { MenuItem, FormControl, Select} from '@material-ui/core';
+import { MenuItem, FormControl, Select, Card, CardContent } from '@material-ui/core';
 import InfoBox from './InfoBox'
+import Map from './Map'
 import './App.css';
 
-function App()  {
-  const [countries, setCountries] = useState([]);
-  const [country, setCountry] = useState('worldwide');
+function App() {
+    const [countries, setCountries] = useState([]);
+    const [country, setCountry] = useState('worldwide');
+    const [countryInfo, setCountryInfo] = useState(({}));
 
-  useEffect(() => {
-    const getCountriesData = async () => {
-      await fetch("https://disease.sh/v3/covid-19/countries")
-      .then((response) => response.json())
-      .then((data) => {
-        const countries = data.map((country) => (
-          {
-            name: country.country,
-            value: country.countryInfo.iso2
-          }
-        ))
-        setCountries(countries);
-      })
-    }
-    getCountriesData();
-    
-  }, [])
-    const onCountryChange = async (event) => {
-      const countryCode = event.target.value;
+    useEffect(() => {
+        fetch("https://disease.sh/v3/covid-19/all")
+        .then(response => response.json())
+        .then( data => {
+            setCountryInfo(data);
+        });
+    },[]);
 
-      console.log("Country Code: ",countryCode);
-      setCountry(countryCode);
-    }
-    return (
-      <div className="App">
-        <div className="app__header">
-        <h1>COVID-19 TRACKER</h1>
-        <FormControl className="app__dropdown">
-          <Select variant="outlined" value={country} onChange={onCountryChange} >
-          <MenuItem value="worldwide">Worldwide</MenuItem >
-            {
-              countries.map((country) => (
-              <MenuItem value={country.value}>{country.name}</MenuItem >))
-            }
-          </Select>
-        </FormControl>
+    useEffect(() => {
+        const getCountriesData = async() => {
+            await fetch("https://disease.sh/v3/covid-19/countries")
+                .then((response) => response.json())
+                .then((data) => {
+                    const countries = data.map((country) => ({
+                        name: country.country,
+                        value: country.countryInfo.iso2
+                    }))
+                    setCountries(countries);
+                })
+        }
+        getCountriesData();
+
+    }, [])
+    const onCountryChange = async(event) => {
+        const countryCode = event.target.value;
+
+        console.log("Country Code: ", countryCode);
+        setCountry(countryCode);
+
+        const url = countryCode === 'worldwide'
+         ? 'https://disease.sh/v3/covid-19/all' 
+         :`https://disease.sh/v3/covid-19/countries/${countryCode}`
+
+         await fetch(url)
+         .then(response => response.json())
+         .then( data => {
+             setCountry(countryCode);//Set the state of thr country info
+             setCountryInfo(data);//Store the response of a country's info into a variable
+         }); 
+    };
+    console.log("Country Info", countryInfo)
+    return ( 
+        <div className= "app" >
+            <div className="app__left">
+
+            <div className="app__header" >
+                <h1 > COVID - 19 TRACKER </h1> 
+                <FormControl className= "app__dropdown" >
+                    <Select variant="outlined"value = { country } onChange = { onCountryChange } >
+                        <MenuItem value="worldwide" > Worldwide </MenuItem> 
+                        {
+                            countries.map((country) => ( 
+                                <MenuItem value={ country.value } > { country.name } </MenuItem>))
+                        } 
+                    </Select> 
+                </FormControl > 
+            </div>
+
+            <div className = "app__stats" >
+                <InfoBox 
+                    title="Coronavirus Cases"
+                    cases={ countryInfo.todayCases }
+                    total= { countryInfo.cases }
+                /> 
+                <InfoBox 
+                    title="Recoverd"
+                    cases={ countryInfo.todayRecovered }
+                    total={ countryInfo.recovered }
+                />
+                <InfoBox 
+                    title="Deaths"
+                    cases={ countryInfo.todayDeaths }
+                    total={ countryInfo.deaths }
+                />
+            </div >
+            
+            { /* Map */ } 
+            <Map />
+
+            </div>
+            <Card className="app__right">
+                <CardContent>
+                    <h3>Live Cases by Country</h3>
+                    { /* Table */ }
+                    <h3>Worldwide new cases</h3>
+                    { /* Graph */ }
+                </CardContent>
+            </Card>    
         </div>
-
-        <div className="app__stats">
-          <InfoBox title="Coronavirys Cases" cases={1234} total={2000}/>
-          <InfoBox title="Recoverd" cases={675} total={3000}/>
-          <InfoBox title="Deaths" cases={984} total={4000}/>
-          {/* infoboxes title="Coronavirus cases" */}
-          {/* infoboxes title="Coronavius recoveries"*/}
-          {/* infoboxes */}
-        </div>
-        {/* Table */}
-        {/* Graph */}
-      </div>
-    );
-  }
+        );
+}
 
 
-export default App;
+    export default App;
