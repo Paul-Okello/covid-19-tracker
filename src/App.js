@@ -5,7 +5,8 @@ import Map from './Map';
 import Table from './Table';
 import './App.css';
 import './Table.css';
-import  {sortData}  from './util'
+import  {sortData}  from './util';
+import LineGraph from './LineGraph';
 
 
 function App() {
@@ -100,13 +101,14 @@ function App() {
                 <CardContent>
                     <h3>Live Cases by Country</h3>
                     <Table countries={tableData} />
-                    <h3>Worldwide new cases</h3>
-                    { /* Graph */ }
+                    <h3>Worldwide new </h3>
+                    <LineGraph  casesType='cases'/>
+                    
                 </CardContent>
             </Card>    
         </div>
         );
-}
+} 
 
 
     export default App;
